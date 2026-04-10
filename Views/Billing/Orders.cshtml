@@ -1,4 +1,4 @@
-@model IEnumerable<ShopBillingSystem.Models.Order>
+@model ShopBillingSystem.ViewModels.OrderListViewModel
 
 @{
     ViewData["Title"] = "Orders History";
@@ -12,7 +12,7 @@
         </a>
     </div>
 
-    @if (!Model.Any())
+    @if (!Model.Orders.Any())
     {
         <div class="alert alert-info text-center">
             <i class="fas fa-info-circle"></i> No orders found. <a href="@Url.Action("Index")">Create your first sale</a>
@@ -35,7 +35,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var order in Model)
+                            @foreach (var order in Model.Orders)
                             {
                                 <tr>
                                     <td>
@@ -44,7 +44,7 @@
                                     <td>@order.CustomerName</td>
                                     <td>@order.OrderDate.ToString("MM/dd/yyyy hh:mm tt")</td>
                                     <td>
-                                        <span class="badge bg-info">@order.OrderItems.Sum(oi => oi.Quantity) items</span>
+                                        <span class="badge bg-info">@order.ItemsCount items</span>
                                     </td>
                                     <td>
                                         <strong class="text-success">$@order.TotalAmount.ToString("F2")</strong>
@@ -68,7 +68,7 @@
                     <div class="card text-center">
                         <div class="card-body">
                             <h5 class="card-title">Total Orders</h5>
-                            <h3 class="text-primary">@Model.Count()</h3>
+                            <h3 class="text-primary">@Model.TotalOrders</h3>
                         </div>
                     </div>
                 </div>
@@ -76,7 +76,7 @@
                     <div class="card text-center">
                         <div class="card-body">
                             <h5 class="card-title">Total Revenue</h5>
-                            <h3 class="text-success">$@Model.Sum(o => o.TotalAmount).ToString("F2")</h3>
+                            <h3 class="text-success">$@Model.TotalRevenue.ToString("F2")</h3>
                         </div>
                     </div>
                 </div>
@@ -84,7 +84,7 @@
                     <div class="card text-center">
                         <div class="card-body">
                             <h5 class="card-title">Items Sold</h5>
-                            <h3 class="text-info">@Model.SelectMany(o => o.OrderItems).Sum(oi => oi.Quantity)</h3>
+                            <h3 class="text-info">@Model.TotalItemsSold</h3>
                         </div>
                     </div>
                 </div>
@@ -92,7 +92,7 @@
                     <div class="card text-center">
                         <div class="card-body">
                             <h5 class="card-title">Avg Order Value</h5>
-                            <h3 class="text-warning">$@(Model.Any() ? Model.Average(o => o.TotalAmount).ToString("F2") : "0.00")</h3>
+                            <h3 class="text-warning">$@Model.AverageOrderValue.ToString("F2")</h3>
                         </div>
                     </div>
                 </div>

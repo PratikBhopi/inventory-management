@@ -1,24 +1,26 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ShopBillingSystem.Data;
-using ShopBillingSystem.Models;
+using ShopBillingSystem.DTOs;
+using ShopBillingSystem.Services;
+using ShopBillingSystem.ViewModels;
 
 namespace ShopBillingSystem.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IProductService _productService;
 
-        public ProductsController(ApplicationDbContext context)
+        public ProductsController(IProductService productService)
         {
-            _context = context;
+            _productService = productService;
         }
 
         // GET: Products
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Products.ToListAsync());
+            var products = await _productService.GetAllProductsAsync();
+            var viewModels = products.Select(MapToViewModel);
+            return View(viewModels);
         }
 
         // GET: Products/Details/5
@@ -29,36 +31,43 @@ namespace ShopBillingSystem.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await _productService.GetProductByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
             }
 
-            return View(product);
+            return View(MapToViewModel(product));
         }
 
         // GET: Products/Create
         [Authorize]
         public IActionResult Create()
         {
-            return View();
+            return View(new CreateProductViewModel());
         }
 
         // POST: Products/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Price,StockQuantity,Category,CreatedDate")] Product product)
+        public async Task<IActionResult> Create(CreateProductViewModel viewModel)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(product);
-                await _context.SaveChangesAsync();
+                var createDto = new CreateProductDto
+                {
+                    Name = viewModel.Name,
+                    Description = viewModel.Description,
+                    Price = viewModel.Price,
+                    StockQuantity = viewModel.StockQuantity,
+                    Category = viewModel.Category
+                };
+
+                await _productService.CreateProductAsync(createDto);
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(viewModel);
         }
 
         // GET: Products/Edit/5
@@ -69,45 +78,57 @@ namespace ShopBillingSystem.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products.FindAsync(id);
+            var product = await _productService.GetProductByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
             }
-            return View(product);
+
+            var viewModel = new EditProductViewModel
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                StockQuantity = product.StockQuantity,
+                Category = product.Category,
+                CreatedDate = product.CreatedDate
+            };
+
+            return View(viewModel);
         }
 
         // POST: Products/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Price,StockQuantity,Category,CreatedDate")] Product product)
+        public async Task<IActionResult> Edit(int id, EditProductViewModel viewModel)
         {
-            if (id != product.Id)
+            if (id != viewModel.Id)
             {
                 return NotFound();
             }
 
             if (ModelState.IsValid)
             {
-                try
+                var updateDto = new UpdateProductDto
                 {
-                    _context.Update(product);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
+                    Id = viewModel.Id,
+                    Name = viewModel.Name,
+                    Description = viewModel.Description,
+                    Price = viewModel.Price,
+                    StockQuantity = viewModel.StockQuantity,
+                    Category = viewModel.Category
+                };
+
+                var result = await _productService.UpdateProductAsync(updateDto);
+                if (result == null)
                 {
-                    if (!ProductExists(product.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    return NotFound();
                 }
+
                 return RedirectToAction(nameof(Index));
             }
-            return View(product);
+            return View(viewModel);
         }
 
         // GET: Products/Delete/5
@@ -119,14 +140,13 @@ namespace ShopBillingSystem.Controllers
                 return NotFound();
             }
 
-            var product = await _context.Products
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await _productService.GetProductByIdAsync(id.Value);
             if (product == null)
             {
                 return NotFound();
             }
 
-            return View(product);
+            return View(MapToViewModel(product));
         }
 
         // POST: Products/Delete/5
@@ -135,19 +155,27 @@ namespace ShopBillingSystem.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var product = await _context.Products.FindAsync(id);
-            if (product != null)
+            var result = await _productService.DeleteProductAsync(id);
+            if (!result)
             {
-                _context.Products.Remove(product);
+                return NotFound();
             }
 
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ProductExists(int id)
+        private static ProductViewModel MapToViewModel(ProductDto dto)
         {
-            return _context.Products.Any(e => e.Id == id);
+            return new ProductViewModel
+            {
+                Id = dto.Id,
+                Name = dto.Name,
+                Description = dto.Description,
+                Price = dto.Price,
+                StockQuantity = dto.StockQuantity,
+                Category = dto.Category,
+                CreatedDate = dto.CreatedDate
+            };
         }
     }
 }

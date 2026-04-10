@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ShopBillingSystem.Data;
+using ShopBillingSystem.Repositories;
+using ShopBillingSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,17 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+// Register Repositories
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+// Register Services
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IBillingService, BillingService>();
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

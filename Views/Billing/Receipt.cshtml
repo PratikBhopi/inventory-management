@@ -1,4 +1,4 @@
-@model ShopBillingSystem.Models.Order
+@model ShopBillingSystem.ViewModels.OrderViewModel
 
 @{
     ViewData["Title"] = "Receipt";
@@ -45,7 +45,7 @@
                             @foreach (var item in Model.OrderItems)
                             {
                                 <tr>
-                                    <td>@item.Product.Name</td>
+                                    <td>@item.ProductName</td>
                                     <td class="text-center">@item.Quantity</td>
                                     <td class="text-end">$@item.UnitPrice.ToString("F2")</td>
                                     <td class="text-end">$@item.Subtotal.ToString("F2")</td>
@@ -58,7 +58,7 @@
 
                     <div class="row">
                         <div class="col-6">
-                            <p><strong>Items Count:</strong> @Model.OrderItems.Sum(oi => oi.Quantity)</p>
+                            <p><strong>Items Count:</strong> @Model.ItemsCount</p>
                         </div>
                         <div class="col-6 text-end">
                             <h4><strong>Total Amount: $@Model.TotalAmount.ToString("F2")</strong></h4>
