@@ -1,1 +1,1 @@
-# Inventory Management Project.
+# Shop Billing System
