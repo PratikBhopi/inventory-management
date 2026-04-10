@@ -1,0 +1,324 @@
+@{
+    ViewData["Title"] = "Point of Sale - Create Bill";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-cash-register"></i> Point of Sale System</h3>
+                </div>
+                <div class="card-body">
+                    <form id="billingForm">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="customerName" class="form-label">Customer Name *</label>
+                                <input type="text" class="form-control" id="customerName" required>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label for="productSelect" class="form-label">Select Product</label>
+                                <select class="form-select" id="productSelect">
+                                    <option value="">Choose a product...</option>
+                                    @foreach (var product in ViewBag.Products as List<SelectListItem>)
+                                    {
+                                        <option value="@product.Value">@product.Text</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="quantity" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="quantity" min="1" value="1">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="unitPrice" class="form-label">Unit Price</label>
+                                <input type="text" class="form-control" id="unitPrice" readonly>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="button" class="btn btn-primary d-block w-100" id="addItemBtn">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <div class="alert alert-info" id="stockInfo" style="display: none;"></div>
+                    <div class="alert alert-danger" id="errorAlert" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-shopping-cart"></i> Bill Items</h4>
+                </div>
+                <div class="card-body">
+                    <div id="billItems">
+                        <p class="text-muted text-center">No items added yet</p>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <strong>Total Amount:</strong>
+                        <span class="h4 text-success" id="totalAmount">$0.00</span>
+                    </div>
+                    
+                    <button type="button" class="btn btn-success btn-lg w-100" id="generateBillBtn" disabled>
+                        <i class="fas fa-receipt"></i> Generate Bill
+                    </button>
+                    
+                    <button type="button" class="btn btn-secondary w-100 mt-2" id="clearBillBtn">
+                        <i class="fas fa-trash"></i> Clear All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Processing bill...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let billItems = [];
+        let totalAmount = 0;
+
+        $(document).ready(function() {
+            // Product selection change
+            $('#productSelect').change(function() {
+                const productId = $(this).val();
+                if (productId) {
+                    loadProductDetails(productId);
+                } else {
+                    $('#unitPrice').val('');
+                    $('#stockInfo').hide();
+                }
+            });
+
+            // Add item button
+            $('#addItemBtn').click(function() {
+                addItemToBill();
+            });
+
+            // Generate bill button
+            $('#generateBillBtn').click(function() {
+                generateBill();
+            });
+
+            // Clear bill button
+            $('#clearBillBtn').click(function() {
+                clearBill();
+            });
+
+            // Quantity input validation
+            $('#quantity').on('input', function() {
+                validateQuantity();
+            });
+        });
+
+        function loadProductDetails(productId) {
+            $.post('@Url.Action("GetProductDetails")', { productId: productId })
+                .done(function(response) {
+                    if (response.success) {
+                        $('#unitPrice').val('$' + response.price.toFixed(2));
+                        $('#stockInfo').show().html(`<i class="fas fa-info-circle"></i> Available Stock: ${response.stockQuantity} units`);
+                        validateQuantity();
+                    } else {
+                        showError(response.message);
+                    }
+                })
+                .fail(function() {
+                    showError('Failed to load product details');
+                });
+        }
+
+        function validateQuantity() {
+            const quantity = parseInt($('#quantity').val()) || 0;
+            const stockInfo = $('#stockInfo').text();
+            const availableStock = stockInfo ? parseInt(stockInfo.match(/\d+/)[0]) : 0;
+            
+            if (quantity > availableStock) {
+                $('#quantity').addClass('is-invalid');
+                $('#addItemBtn').prop('disabled', true);
+            } else {
+                $('#quantity').removeClass('is-invalid');
+                $('#addItemBtn').prop('disabled', false);
+            }
+        }
+
+        function addItemToBill() {
+            const productSelect = $('#productSelect');
+            const productId = parseInt(productSelect.val());
+            const productText = productSelect.find('option:selected').text();
+            const quantity = parseInt($('#quantity').val()) || 0;
+            const unitPriceText = $('#unitPrice').val();
+            const unitPrice = parseFloat(unitPriceText.replace('$', ''));
+
+            if (!productId || quantity <= 0) {
+                showError('Please select a product and enter a valid quantity');
+                return;
+            }
+
+            // Check if item already exists
+            const existingItemIndex = billItems.findIndex(item => item.productId === productId);
+            if (existingItemIndex >= 0) {
+                billItems[existingItemIndex].quantity += quantity;
+            } else {
+                billItems.push({
+                    productId: productId,
+                    productName: productText.split(' - ')[0],
+                    quantity: quantity,
+                    unitPrice: unitPrice
+                });
+            }
+
+            updateBillDisplay();
+            clearProductSelection();
+        }
+
+        function updateBillDisplay() {
+            const billItemsContainer = $('#billItems');
+            
+            if (billItems.length === 0) {
+                billItemsContainer.html('<p class="text-muted text-center">No items added yet</p>');
+                $('#generateBillBtn').prop('disabled', true);
+                totalAmount = 0;
+            } else {
+                let html = '';
+                totalAmount = 0;
+
+                billItems.forEach((item, index) => {
+                    const subtotal = item.quantity * item.unitPrice;
+                    totalAmount += subtotal;
+
+                    html += `
+                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                            <div>
+                                <strong>${item.productName}</strong><br>
+                                <small class="text-muted">$${item.unitPrice.toFixed(2)} × ${item.quantity}</small>
+                            </div>
+                            <div class="text-end">
+                                <div>$${subtotal.toFixed(2)}</div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(${index})">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                billItemsContainer.html(html);
+                $('#generateBillBtn').prop('disabled', false);
+            }
+
+            $('#totalAmount').text('$' + totalAmount.toFixed(2));
+        }
+
+        function removeItem(index) {
+            billItems.splice(index, 1);
+            updateBillDisplay();
+        }
+
+        function clearProductSelection() {
+            $('#productSelect').val('');
+            $('#quantity').val('1');
+            $('#unitPrice').val('');
+            $('#stockInfo').hide();
+            $('#errorAlert').hide();
+        }
+
+        function clearBill() {
+            billItems = [];
+            updateBillDisplay();
+            clearProductSelection();
+        }
+
+        function generateBill() {
+            const customerName = $('#customerName').val().trim();
+            
+            if (!customerName) {
+                showError('Please enter customer name');
+                return;
+            }
+
+            if (billItems.length === 0) {
+                showError('Please add at least one item to the bill');
+                return;
+            }
+
+            const billData = {
+                customerName: customerName,
+                items: billItems.map(item => ({
+                    productId: item.productId,
+                    quantity: item.quantity
+                }))
+            };
+
+            $('#loadingModal').modal('show');
+
+            $.ajax({
+                url: '@Url.Action("ProcessBill")',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(billData),
+                success: function(response) {
+                    $('#loadingModal').modal('hide');
+                    
+                    if (response.success) {
+                        alert(`Bill generated successfully!\nOrder ID: ${response.orderId}\nTotal Amount: $${response.totalAmount}`);
+                        window.location.href = '@Url.Action("Receipt")/' + response.orderId;
+                    } else {
+                        showError(response.message);
+                    }
+                },
+                error: function() {
+                    $('#loadingModal').modal('hide');
+                    showError('Failed to process the bill. Please try again.');
+                }
+            });
+        }
+
+        function showError(message) {
+            $('#errorAlert').show().text(message);
+            setTimeout(() => $('#errorAlert').hide(), 5000);
+        }
+    </script>
+}
+
+@section Styles {
+    <style>
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        
+        .is-invalid {
+            border-color: #dc3545;
+        }
+        
+        #billItems .border {
+            border-color: #dee2e6 !important;
+        }
+        
+        .text-success {
+            color: #198754 !important;
+        }
+    </style>
+}
