@@ -186,7 +186,7 @@ namespace ShopBillingSystem.Services
                 {
                     Id = oi.Id,
                     ProductId = oi.ProductId,
-                    ProductName = oi.Product.Name,
+                    ProductName = oi.Product?.Name ?? "Unknown Product",
                     Quantity = oi.Quantity,
                     UnitPrice = oi.UnitPrice
                 }).ToList()

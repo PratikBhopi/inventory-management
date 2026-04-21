@@ -1,54 +1,196 @@
 @model ShopBillingSystem.ViewModels.ProductViewModel
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Product Details";
 }
 
-<h1>Product Details</h1>
+<div class="page-container">
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1><i class="fas fa-info-circle"></i> Product Details</h1>
+            <p class="text-muted">View complete product information</p>
+        </div>
+        <div class="action-buttons">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+</div>
 
-<div>
-    <h4>Product</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.StockQuantity)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.StockQuantity)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Category)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Category)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedDate)
-        </dd>
-    </dl>
+<div class="details-container">
+    <div class="card">
+        <div class="card-header">
+            <h2>@Model.Name</h2>
+            <span class="category-badge">@Model.Category</span>
+        </div>
+        <div class="card-body">
+            <div class="details-grid">
+                <div class="detail-section">
+                    <div class="detail-icon">
+                        <i class="fas fa-align-left"></i>
+                    </div>
+                    <div class="detail-content">
+                        <h4>Description</h4>
+                        <p>@(Model.Description ?? "No description provided")</p>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="detail-content">
+                        <h4>Price</h4>
+                        <p class="price-value">$@Model.Price.ToString("F2")</p>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-icon">
+                        <i class="fas fa-cubes"></i>
+                    </div>
+                    <div class="detail-content">
+                        <h4>Stock Quantity</h4>
+                        <p class="stock-value @(Model.StockQuantity < 10 ? "low-stock" : "")">
+                            @Model.StockQuantity units
+                            @if (Model.StockQuantity < 10)
+                            {
+                                <span class="badge bg-warning">Low Stock</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <div class="detail-icon">
+                        <i class="fas fa-calendar"></i>
+                    </div>
+                    <div class="detail-content">
+                        <h4>Created Date</h4>
+                        <p>@Model.CreatedDate.ToString("MMMM dd, yyyy")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-warning">Edit</a>
-    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
 </div>
+
+<style>
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 var(--space-md);
+    }
+    
+    .page-header {
+        margin-bottom: var(--space-xl);
+        padding-bottom: var(--space-lg);
+        border-bottom: 3px solid var(--primary-coral);
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: var(--space-sm);
+    }
+    
+    .details-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    
+    .card-header h2 {
+        color: var(--pure-white);
+        margin-bottom: var(--space-sm);
+    }
+    
+    .category-badge {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius-md);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        color: var(--pure-white);
+    }
+    
+    .details-grid {
+        display: grid;
+        gap: var(--space-lg);
+    }
+    
+    .detail-section {
+        display: flex;
+        gap: var(--space-md);
+        padding: var(--space-lg);
+        background: var(--off-white);
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--primary-teal);
+    }
+    
+    .detail-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary-coral), var(--primary-teal));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--pure-white);
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+    
+    .detail-content h4 {
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--medium-grey);
+        margin-bottom: var(--space-xs);
+        font-family: var(--font-body);
+    }
+    
+    .detail-content p {
+        font-size: 1.125rem;
+        color: var(--sepia-dark);
+        margin: 0;
+    }
+    
+    .price-value {
+        font-family: var(--font-display);
+        font-size: 2rem;
+        color: var(--accent-green);
+    }
+    
+    .stock-value {
+        font-family: var(--font-display);
+        font-size: 1.5rem;
+    }
+    
+    .stock-value.low-stock {
+        color: var(--accent-red);
+    }
+    
+    @@media (max-width: 768px) {
+        .page-header .d-flex {
+            flex-direction: column;
+            gap: var(--space-md);
+            align-items: flex-start !important;
+        }
+        
+        .action-buttons {
+            width: 100%;
+        }
+        
+        .action-buttons .btn {
+            flex: 1;
+        }
+    }
+</style>

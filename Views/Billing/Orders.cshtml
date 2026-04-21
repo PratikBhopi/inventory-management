@@ -4,6 +4,7 @@
     ViewData["Title"] = "Orders History";
 }
 
+<div class="page-container">
 <div class="container-fluid">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2><i class="fas fa-history"></i> Orders History</h2>
@@ -20,6 +21,45 @@
     }
     else
     {
+        <!-- Summary Cards at Top -->
+        <div class="mb-4">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Orders</h5>
+                            <h3 class="text-primary">@Model.TotalOrders</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Revenue</h5>
+                            <h3 class="text-success">$@Model.TotalRevenue.ToString("F2")</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Items Sold</h5>
+                            <h3 class="text-info">@Model.TotalItemsSold</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Avg Order Value</h5>
+                            <h3 class="text-warning">$@Model.AverageOrderValue.ToString("F2")</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Table -->
         <div class="card">
             <div class="card-body">
                 <div class="table-responsive">
@@ -61,70 +101,52 @@
                 </div>
             </div>
         </div>
-
-        <div class="mt-4">
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Orders</h5>
-                            <h3 class="text-primary">@Model.TotalOrders</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Revenue</h5>
-                            <h3 class="text-success">$@Model.TotalRevenue.ToString("F2")</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">Items Sold</h5>
-                            <h3 class="text-info">@Model.TotalItemsSold</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card text-center">
-                        <div class="card-body">
-                            <h5 class="card-title">Avg Order Value</h5>
-                            <h3 class="text-warning">$@Model.AverageOrderValue.ToString("F2")</h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     }
+</div>
 </div>
 
 @section Styles {
     <style>
+        .page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 var(--space-md);
+        }
+        
         .card {
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            box-shadow: var(--shadow-md);
         }
         
         .table-hover tbody tr:hover {
-            background-color: rgba(0, 0, 0, 0.025);
+            background: var(--primary-yellow);
         }
         
         .text-success {
-            color: #198754 !important;
+            color: var(--accent-green) !important;
         }
         
         .text-primary {
-            color: #0d6efd !important;
+            color: var(--primary-coral) !important;
         }
         
         .text-info {
-            color: #0dcaf0 !important;
+            color: var(--primary-teal) !important;
         }
         
         .text-warning {
-            color: #ffc107 !important;
+            color: var(--sepia-medium) !important;
+        }
+        
+        @@media (max-width: 768px) {
+            .d-flex {
+                flex-direction: column;
+                gap: var(--space-md);
+                align-items: flex-start !important;
+            }
+            
+            .row .col-md-3 {
+                margin-bottom: var(--space-md);
+            }
         }
     </style>
 }

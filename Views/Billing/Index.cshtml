@@ -2,6 +2,7 @@
     ViewData["Title"] = "Point of Sale - Create Bill";
 }
 
+<div class="page-container">
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-8">
@@ -13,14 +14,18 @@
                     <form id="billingForm">
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label for="customerName" class="form-label">Customer Name *</label>
-                                <input type="text" class="form-control" id="customerName" required>
+                                <label for="customerName" class="form-label">
+                                    <i class="fas fa-user"></i> Customer Name *
+                                </label>
+                                <input type="text" class="form-control" id="customerName" required placeholder="Enter customer name">
                             </div>
                         </div>
 
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <label for="productSelect" class="form-label">Select Product</label>
+                                <label for="productSelect" class="form-label">
+                                    <i class="fas fa-box"></i> Select Product
+                                </label>
                                 <select class="form-select" id="productSelect">
                                     <option value="">Choose a product...</option>
                                     @foreach (var product in ViewBag.Products as List<SelectListItem>)
@@ -30,11 +35,15 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label for="quantity" class="form-label">Quantity</label>
+                                <label for="quantity" class="form-label">
+                                    <i class="fas fa-sort-numeric-up"></i> Quantity
+                                </label>
                                 <input type="number" class="form-control" id="quantity" min="1" value="1">
                             </div>
                             <div class="col-md-3">
-                                <label for="unitPrice" class="form-label">Unit Price</label>
+                                <label for="unitPrice" class="form-label">
+                                    <i class="fas fa-dollar-sign"></i> Unit Price
+                                </label>
                                 <input type="text" class="form-control" id="unitPrice" readonly>
                             </div>
                             <div class="col-md-2">
@@ -46,8 +55,8 @@
                         </div>
                     </form>
 
-                    <div class="alert alert-info" id="stockInfo" style="display: none;"></div>
-                    <div class="alert alert-danger" id="errorAlert" style="display: none;"></div>
+                    <div class="alert alert-info d-none" id="stockInfo"></div>
+                    <div class="alert alert-danger d-none" id="errorAlert"></div>
                 </div>
             </div>
         </div>
@@ -81,16 +90,17 @@
         </div>
     </div>
 </div>
+</div>
 
 <!-- Loading Modal -->
-<div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static">
+<div class="modal" id="loadingModal">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="modal-body text-center">
-                <div class="spinner-border text-primary" role="status">
+                <div class="spinner" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
-                <p class="mt-2">Processing bill...</p>
+                <p class="mt-3">Processing bill...</p>
             </div>
         </div>
     </div>
@@ -101,6 +111,13 @@
         let billItems = [];
         let totalAmount = 0;
 
+        // HTML encoding function to prevent XSS
+        function htmlEncode(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
         $(document).ready(function() {
             // Product selection change
             $('#productSelect').change(function() {
@@ -109,7 +126,7 @@
                     loadProductDetails(productId);
                 } else {
                     $('#unitPrice').val('');
-                    $('#stockInfo').hide();
+                    document.getElementById('stockInfo').classList.add('d-none');
                 }
             });
 
@@ -125,7 +142,15 @@
 
             // Clear bill button
             $('#clearBillBtn').click(function() {
-                clearBill();
+                customConfirm(
+                    'Are you sure you want to clear all items from the bill?',
+                    'Clear Bill',
+                    { confirmText: 'Yes, Clear', cancelText: 'Cancel', type: 'warning' }
+                ).then(result => {
+                    if (result) {
+                        clearBill();
+                    }
+                });
             });
 
             // Quantity input validation
@@ -139,7 +164,9 @@
                 .done(function(response) {
                     if (response.success) {
                         $('#unitPrice').val('$' + response.price.toFixed(2));
-                        $('#stockInfo').show().html(`<i class="fas fa-info-circle"></i> Available Stock: ${response.stockQuantity} units`);
+                        const stockInfo = document.getElementById('stockInfo');
+                        stockInfo.classList.remove('d-none');
+                        stockInfo.innerHTML = `<i class="fas fa-info-circle"></i> Available Stock: ${response.stockQuantity} units`;
                         validateQuantity();
                     } else {
                         showError(response.message);
@@ -212,11 +239,11 @@
                     html += `
                         <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
                             <div>
-                                <strong>${item.productName}</strong><br>
+                                <strong>${htmlEncode(item.productName)}</strong><br>
                                 <small class="text-muted">$${item.unitPrice.toFixed(2)} × ${item.quantity}</small>
                             </div>
                             <div class="text-end">
-                                <div>$${subtotal.toFixed(2)}</div>
+                                <div class="fw-bold">$${subtotal.toFixed(2)}</div>
                                 <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeItem(${index})">
                                     <i class="fas fa-times"></i>
                                 </button>
@@ -241,8 +268,8 @@
             $('#productSelect').val('');
             $('#quantity').val('1');
             $('#unitPrice').val('');
-            $('#stockInfo').hide();
-            $('#errorAlert').hide();
+            document.getElementById('stockInfo').classList.add('d-none');
+            document.getElementById('errorAlert').classList.add('d-none');
         }
 
         function clearBill() {
@@ -272,7 +299,7 @@
                 }))
             };
 
-            $('#loadingModal').modal('show');
+            Modal.show('loadingModal');
 
             $.ajax({
                 url: '@Url.Action("ProcessBill")',
@@ -280,45 +307,56 @@
                 contentType: 'application/json',
                 data: JSON.stringify(billData),
                 success: function(response) {
-                    $('#loadingModal').modal('hide');
+                    Modal.hide('loadingModal');
                     
                     if (response.success) {
-                        alert(`Bill generated successfully!\nOrder ID: ${response.orderId}\nTotal Amount: $${response.totalAmount}`);
-                        window.location.href = '@Url.Action("Receipt")/' + response.orderId;
+                        customAlert(
+                            `<strong>Order ID:</strong> ${htmlEncode(response.orderId.toString())}<br><strong>Total Amount:</strong> $${response.totalAmount.toFixed(2)}`,
+                            'Bill Generated Successfully!',
+                            'success'
+                        ).then(() => {
+                            window.location.href = '@Url.Action("Receipt")/' + response.orderId;
+                        });
                     } else {
                         showError(response.message);
                     }
                 },
                 error: function() {
-                    $('#loadingModal').modal('hide');
+                    Modal.hide('loadingModal');
                     showError('Failed to process the bill. Please try again.');
                 }
             });
         }
 
         function showError(message) {
-            $('#errorAlert').show().text(message);
-            setTimeout(() => $('#errorAlert').hide(), 5000);
+            customAlert(message, 'Error', 'error');
         }
     </script>
 }
 
 @section Styles {
     <style>
-        .card {
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        .page-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 var(--space-md);
         }
         
-        .is-invalid {
-            border-color: #dc3545;
-        }
-        
-        #billItems .border {
-            border-color: #dee2e6 !important;
-        }
-        
-        .text-success {
-            color: #198754 !important;
+        @@media (max-width: 767px) {
+            .col-md-8, .col-md-4 {
+                margin-bottom: var(--space-lg);
+            }
+            
+            .row.mb-3 {
+                margin-bottom: var(--space-md) !important;
+            }
+            
+            .row .col-md-2,
+            .row .col-md-3,
+            .row .col-md-4,
+            .row .col-md-6 {
+                margin-bottom: var(--space-sm);
+            }
         }
     </style>
 }
