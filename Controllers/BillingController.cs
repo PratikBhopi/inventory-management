@@ -68,6 +68,13 @@ namespace ShopBillingSystem.Controllers
                 return NotFound();
             }
 
+            // Security: Verify the order belongs to the current user
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (order.UserId != userId && !User.IsInRole("Admin"))
+            {
+                return Forbid();
+            }
+
             var viewModel = MapToOrderViewModel(order);
             return View(viewModel);
         }
@@ -75,7 +82,9 @@ namespace ShopBillingSystem.Controllers
         // GET: Billing/Orders
         public async Task<IActionResult> Orders()
         {
-            var orders = await _billingService.GetAllOrdersAsync();
+            // Security: Only show orders for the current user
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var orders = await _billingService.GetOrdersByUserIdAsync(userId ?? string.Empty);
             var viewModels = orders.Select(MapToOrderViewModel).ToList();
             
             var listViewModel = new OrderListViewModel

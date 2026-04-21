@@ -71,6 +71,7 @@ namespace ShopBillingSystem.Controllers
         }
 
         // GET: Products/Edit/5
+        [Authorize]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -101,6 +102,7 @@ namespace ShopBillingSystem.Controllers
         // POST: Products/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize]
         public async Task<IActionResult> Edit(int id, EditProductViewModel viewModel)
         {
             if (id != viewModel.Id)

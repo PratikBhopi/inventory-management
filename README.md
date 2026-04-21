@@ -104,8 +104,9 @@ ShopBillingSystem/
 - Entity Framework Core 10
 - ASP.NET Core Identity (Authentication & Authorization)
 - SQL Server / LocalDB
-- Bootstrap 5 (UI Framework)
+- Custom Design System (Modern Receipt + Retro Diner + Vintage Ledger aesthetics)
 - Razor Views
+- jQuery (for AJAX and form validation)
 
 ## Troubleshooting
 

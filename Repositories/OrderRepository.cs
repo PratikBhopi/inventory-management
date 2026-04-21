@@ -31,6 +31,7 @@ namespace ShopBillingSystem.Repositories
         {
             return await _dbSet
                 .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
                 .Where(o => o.UserId == userId)
                 .OrderByDescending(o => o.OrderDate)
                 .ToListAsync();

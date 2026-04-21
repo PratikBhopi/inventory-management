@@ -3,38 +3,53 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - ShopBillingSystem</title>
-    <script type="importmap"></script>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <title>@ViewData["Title"] - ShopBilling</title>
+    
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/ShopBillingSystem.styles.css" asp-append-version="true" />
+    
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+    <header class="retro-header">
+        <nav class="retro-navbar">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ShopBillingSystem</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="retro-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="brand-icon">🏪</span>
+                    <span class="brand-text">ShopBilling</span>
+                    <span class="brand-tagline">EST. 2026</span>
+                </a>
+                
+                <button class="navbar-toggler" type="button">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+                
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                            <a class="retro-nav-link" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="fas fa-home"></i>
+                                <span>Home</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Products" asp-action="Index">Products</a>
+                            <a class="retro-nav-link" asp-area="" asp-controller="Products" asp-action="Index">
+                                <i class="fas fa-box"></i>
+                                <span>Products</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Billing" asp-action="Index">Point of Sale</a>
+                            <a class="retro-nav-link" asp-area="" asp-controller="Billing" asp-action="Index">
+                                <i class="fas fa-cash-register"></i>
+                                <span>POS</span>
+                            </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Billing" asp-action="Orders">Orders</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            <a class="retro-nav-link" asp-area="" asp-controller="Billing" asp-action="Orders">
+                                <i class="fas fa-receipt"></i>
+                                <span>Orders</span>
+                            </a>
                         </li>
                     </ul>
                     <partial name="_LoginPartial" />
@@ -42,21 +57,21 @@
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    
+    <main role="main" class="main-content">
+        @RenderBody()
+    </main>
 
     <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - ShopBillingSystem - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        <div class="container text-center">
+            <p>&copy; 2026 - ShopBilling System - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a></p>
+            <p class="small">Designed with <i class="fas fa-heart" style="color: var(--primary-coral);"></i> for modern retail</p>
         </div>
     </footer>
+    
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/custom.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Styles", required: false)
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

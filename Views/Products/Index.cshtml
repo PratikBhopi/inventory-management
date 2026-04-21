@@ -4,62 +4,249 @@
     ViewData["Title"] = "Products";
 }
 
-<h1>Products</h1>
+<div class="page-container">
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1><i class="fas fa-box"></i> Product Inventory</h1>
+            <p class="text-muted">Manage your product catalog</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus"></i> Add New Product
+        </a>
+    </div>
+</div>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Description)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Price)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.StockQuantity)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Category)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedDate)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Price)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.StockQuantity)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Category)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedDate)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Edit</a>
-                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
-                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">Delete</a>
-            </td>
-        </tr>
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <div class="empty-icon">
+            <i class="fas fa-box-open"></i>
+        </div>
+        <h3>No Products Yet</h3>
+        <p>Start building your inventory by adding your first product</p>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Your First Product
+        </a>
+    </div>
 }
-    </tbody>
-</table>
+else
+{
+    <div class="products-grid">
+        @foreach (var item in Model)
+        {
+            <div class="product-card">
+                <div class="product-header">
+                    <h3 class="product-name">@item.Name</h3>
+                    <span class="product-category">@item.Category</span>
+                </div>
+                
+                <div class="product-body">
+                    <p class="product-description">@(item.Description ?? "No description")</p>
+                    
+                    <div class="product-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Price</span>
+                            <span class="detail-value price">$@item.Price.ToString("F2")</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Stock</span>
+                            <span class="detail-value stock @(item.StockQuantity < 10 ? "low-stock" : "")">
+                                @item.StockQuantity units
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="product-meta">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar"></i> Added @item.CreatedDate.ToString("MMM dd, yyyy")
+                        </small>
+                    </div>
+                </div>
+                
+                <div class="product-actions">
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                        <i class="fas fa-eye"></i> View
+                    </a>
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+</div>
+
+<style>
+    .page-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 var(--space-md);
+    }
+    
+    .page-header {
+        margin-bottom: var(--space-xl);
+        padding-bottom: var(--space-lg);
+        border-bottom: 3px solid var(--primary-coral);
+    }
+    
+    .page-header h1 {
+        margin-bottom: var(--space-xs);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: var(--space-xl) var(--space-lg);
+        background: var(--pure-white);
+        border-radius: var(--radius-lg);
+        border: 2px dashed var(--sepia-medium);
+        margin: var(--space-xl) 0;
+    }
+    
+    .empty-icon {
+        font-size: 5rem;
+        color: var(--medium-grey);
+        margin-bottom: var(--space-md);
+    }
+    
+    .empty-state h3 {
+        color: var(--sepia-dark);
+        margin-bottom: var(--space-sm);
+    }
+    
+    .empty-state p {
+        color: var(--medium-grey);
+        margin-bottom: var(--space-lg);
+    }
+    
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: var(--space-lg);
+        margin-top: var(--space-lg);
+    }
+    
+    .product-card {
+        background: var(--pure-white);
+        border: 2px solid var(--sepia-medium);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        transition: all var(--transition-base);
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+        border-color: var(--primary-teal);
+    }
+    
+    .product-header {
+        background: linear-gradient(135deg, var(--primary-coral), var(--primary-teal));
+        padding: var(--space-md);
+        color: var(--pure-white);
+    }
+    
+    .product-name {
+        font-size: 1.25rem;
+        margin-bottom: var(--space-xs);
+        color: var(--pure-white);
+    }
+    
+    .product-category {
+        display: inline-block;
+        background: rgba(255,255,255,0.2);
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-sm);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+    }
+    
+    .product-body {
+        padding: var(--space-md);
+        flex-grow: 1;
+    }
+    
+    .product-description {
+        color: var(--medium-grey);
+        font-size: 0.875rem;
+        margin-bottom: var(--space-md);
+        min-height: 3rem;
+    }
+    
+    .product-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-md);
+        margin-bottom: var(--space-md);
+        padding: var(--space-md);
+        background: var(--off-white);
+        border-radius: var(--radius-md);
+    }
+    
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .detail-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--medium-grey);
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+    }
+    
+    .detail-value {
+        font-family: var(--font-display);
+        font-size: 1.25rem;
+        color: var(--sepia-dark);
+    }
+    
+    .detail-value.price {
+        color: var(--accent-green);
+    }
+    
+    .detail-value.stock.low-stock {
+        color: var(--accent-red);
+    }
+    
+    .product-meta {
+        padding-top: var(--space-sm);
+        border-top: 1px solid var(--light-grey);
+    }
+    
+    .product-actions {
+        display: flex;
+        gap: 0.5rem;
+        padding: var(--space-md);
+        background: var(--off-white);
+        border-top: 1px solid var(--light-grey);
+    }
+    
+    .product-actions .btn {
+        flex: 1;
+        justify-content: center;
+    }
+    
+    @@media (max-width: 768px) {
+        .products-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .page-header .d-flex {
+            flex-direction: column;
+            gap: var(--space-md);
+            align-items: flex-start !important;
+        }
+    }
+</style>
